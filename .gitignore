@@ -45,3 +45,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.pdb
+
+prja/.vs/
+prjb/.vs/
+prja/Debug/
+prjb/Debug/
+prja/prja/Debug/
+prjb/prjb/Debug/
+*.opendb
+prjb/prjb.VC.db
+*.db
