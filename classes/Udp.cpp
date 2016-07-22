@@ -21,20 +21,12 @@ bool client::rsend(SOCKET s) {
 	return true;
 }
 
-client::client(void* b, int32_t l, sockaddr_in a) :adr(a), id(0) {
-	std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-	nowid = -1;
-	pkg p;
-	p.pbuf = b;
-	p.len = l+1;
-	p.id = id++;
-	((char*)b)[l] = p.id;
-	data.push_back(p);
+client::client( sockaddr_in a) :adr(a), id(0), nowid(-1){
 };
 
 bool client::send(void* b, int32_t l) {
 	std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-	if (data.size() >= 200) return false;
+	if (data.size() >= 120) return false; // 7bit Ϊ127
 	
 	pkg p;
 	p.pbuf = b;
@@ -69,13 +61,15 @@ void CUdp::thread1() {
 		peerlist::iterator iter = this->peer.find(peer);
 		if (iter != this->peer.end()) {
 			client* r = this->peer.find(peer)->second;
-			uint8_t id = pbuf[len - 1];
+			uint8_t id = pbuf[recvd - 1];
 			r->ok(id);
-			r->notify_recv(pbuf, len - 1);
+			r->notify_recv(pbuf, recvd - 1);
 			r->rsend(s);
 		}
 		else {
-			this->peer[peer] = new client();
+			client* r = new client(peer);
+			r->notify_recv(pbuf, recvd - 1);
+			this->peer[peer] = r;
 		}
 	}
 }
@@ -88,7 +82,10 @@ bool CUdp::sendto(void* pbuf, int32_t len, sockaddr_in* adr) {
 		ret = (*it).second->send(pbuf, len);
 	}
 	else {
-		peer[*adr] = new client(pbuf, len, *adr);
+		client* p = new client(*adr);
+		p->send(pbuf, len);
+		peer[*adr] = p;
+		
 		ret = true;
 	}
 	return ret;

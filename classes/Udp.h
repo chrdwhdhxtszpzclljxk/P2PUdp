@@ -27,7 +27,7 @@ typedef std::list<pkg> pkglist;
 
 class client {
 public:
-	client(void* b, int32_t l, sockaddr_in a);
+	client(sockaddr_in a);
 	bool rsend(SOCKET s);
 
 	bool send(void* b, int32_t l);

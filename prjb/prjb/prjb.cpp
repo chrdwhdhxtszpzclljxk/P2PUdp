@@ -14,8 +14,10 @@ int main()
 	CUdp::setup(1234);
 	char* msg = CUdp::me()->alloc(4);
 	strncpy(msg, "test",4);
-	CUdp::me()->sendto(msg,4,&local);
-	getchar();
+	while (1) {
+		CUdp::me()->sendto(msg, 4, &local);
+		getchar();
+	}
     return 0;
 }
 
