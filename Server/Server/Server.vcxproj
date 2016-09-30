@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2D5AAF50-2966-411C-8E60-D955F96A4AE0}</ProjectGuid>
+    <ProjectGuid>{D8259A27-6A89-47B5-B23E-13F7F0B16608}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>prjb</RootNamespace>
+    <RootNamespace>Server</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -149,15 +149,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\classes\client.h" />
-    <ClInclude Include="..\..\classes\Udp.h" />
+    <ClInclude Include="client.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\classes\client.cpp" />
-    <ClCompile Include="..\..\classes\Udp.cpp" />
-    <ClCompile Include="prjb.cpp" />
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

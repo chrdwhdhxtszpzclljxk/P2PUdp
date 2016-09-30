@@ -149,11 +149,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\classes\client.h" />
     <ClInclude Include="..\..\classes\Udp.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\classes\client.cpp" />
     <ClCompile Include="..\..\classes\Udp.cpp" />
     <ClCompile Include="prja.cpp" />
     <ClCompile Include="stdafx.cpp" />

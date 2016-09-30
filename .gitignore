@@ -49,10 +49,13 @@ Temporary Items
 
 prja/.vs/
 prjb/.vs/
+Server/.vs/
 prja/Debug/
 prjb/Debug/
+Server/Debug/
 prja/prja/Debug/
 prjb/prjb/Debug/
+Server/Server/Debug/
 *.opendb
 prjb/prjb.VC.db
 *.db

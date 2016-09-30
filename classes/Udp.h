@@ -11,37 +11,13 @@
 #include <condition_variable>
 #include <atomic>
 
+#include "client.h"
+
 class basecmd {
 public:
 	uint8_t id;
 };
 
-class pkg {
-public:
-	void* pbuf;
-	int32_t len;
-	uint8_t id;
-};
-
-typedef std::list<pkg> pkglist;
-
-class client {
-public:
-	client(sockaddr_in a);
-	bool rsend(SOCKET s);
-
-	bool send(void* b, int32_t l);
-
-	bool ok(uint8_t id);
-
-	virtual bool notify_recv(void* pbuf, int32_t len) { return false; };
-
-private:
-	pkglist data;
-	uint8_t id;
-	uint8_t nowid;
-	sockaddr_in adr;
-};
 
 
 //map的比较函数
@@ -78,7 +54,8 @@ public:
 	char* alloc(int32_t len);
 	std::recursive_mutex mut;
 private:
-	void thread1();
+	void thread_recv();
+	void thread_send();
 	virtual bool init();
 	CUdp();
 	~CUdp();
@@ -86,6 +63,6 @@ private:
 	bool run;
 	peerlist peer;
 	static uint16_t port;
-	std::thread thr;
+	std::thread thr_recv,thr_send;
 };
 

@@ -4,40 +4,19 @@
 
 uint16_t CUdp::port;
 
-bool client::ok(uint8_t id) {
-	std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-	if (data.front().id == id) data.pop_front();
-	return true;
-}
 
-bool client::rsend(SOCKET s) {
-	std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-	if (!data.empty()) {
-		pkg p = data.front();
-		if (nowid == p.id) return false;
-		nowid = p.id;
-		::sendto(s, (char*)p.pbuf, p.len, 0, (sockaddr*)&adr, sizeof(adr));
+void CUdp::thread_send() {
+	run = true;
+	while (run) {
+		std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
+		peerlist::iterator iter;
+		for (iter = this->peer.begin(); iter != this->peer.end(); iter++) {
+			(*iter).second->rsend(s);
+		}
 	}
-	return true;
 }
 
-client::client( sockaddr_in a) :adr(a), id(0), nowid(-1){
-};
-
-bool client::send(void* b, int32_t l) {
-	std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-	if (data.size() >= 120) return false; // 7bit Ϊ127
-	
-	pkg p;
-	p.pbuf = b;
-	p.len = l+1;
-	p.id = id++;
-	((char*)b)[l] = p.id;
-	data.push_back(p);
-	return true;
-}
-
-void CUdp::thread1() {
+void CUdp::thread_recv() {
 	run = true;
 	int32_t len = 1024 * 8;
 	int32_t recvd = 0;
@@ -47,24 +26,16 @@ void CUdp::thread1() {
 	while (run) {
 		recvd = recvfrom(s, pbuf, len, 0, (sockaddr*)&peer,&adrlen);
 		if (recvd == -1) {
-			if (GetLastError() != WSAEWOULDBLOCK) { break; }
-			else {
-				std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-				peerlist::iterator iter;
-				for (iter = this->peer.begin(); iter != this->peer.end(); iter++) {
-					(*iter).second->rsend(s);
-				}
-				continue;
-			}
+			continue;
 		}
-		std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-		peerlist::iterator iter = this->peer.find(peer);
-		if (iter != this->peer.end()) {
-			client* r = this->peer.find(peer)->second;
-			uint8_t id = pbuf[recvd - 1];
-			r->ok(id);
-			r->notify_recv(pbuf, recvd - 1);
-			r->rsend(s);
+		h* ph = (h*)(pbuf + recvd - 1);
+		if (ph->t = 1) {
+			std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
+			peerlist::iterator iter = this->peer.find(peer);
+			if (iter != this->peer.end()) {
+				client* r = this->peer.find(peer)->second;
+				r->ack(ph);
+			}
 		}
 		else {
 			client* r = new client(peer);
@@ -122,14 +93,8 @@ bool CUdp::init() {
 			int nResult = bind(s, (sockaddr*)&local, sizeof(sockaddr));
 			DWORD err = GetLastError();
 			if (nResult != SOCKET_ERROR) {
-				// Set the socket I/O mode: In this case FIONBIO
-				// enables or disables the blocking mode for the
-				// socket based on the numerical value of iMode.
-				// If iMode = 0, blocking is enabled;
-				// If iMode != 0, non-blocking mode is enabled.
-				u_long iMode = 1;  //non-blocking mode is enabled.
-				ioctlsocket(s, FIONBIO, &iMode);
-				thr = std::thread(&CUdp::thread1,this);
+				thr_recv = std::thread(&CUdp::thread_recv,this);
+				thr_send = std::thread(&CUdp::thread_send, this);
 				ret = true;
 			}
 		}
