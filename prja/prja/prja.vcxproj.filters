@@ -24,10 +24,7 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\classes\Udp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\classes\client.h">
+    <ClInclude Include="..\..\classes\cmddef.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,12 +33,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="prja.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\classes\Udp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\classes\client.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

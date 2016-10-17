@@ -8,5 +8,6 @@ public:
 	~client();
 public:
 	std::vector<char> mi, mo;
+	uint64_t id;
 };
 

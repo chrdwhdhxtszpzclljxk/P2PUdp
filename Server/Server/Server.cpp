@@ -14,32 +14,40 @@
 #include <condition_variable>
 #include <atomic>
 #include "client.h"
+#include <cmddef.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
+/*
 #define makekey(a,b,c) {\
 c = a; \
 c = c << 32; \
 c = c | b;\
 }
+*/
 
 typedef std::map<uint64_t, client*> CLIENTS;
 typedef std::lock_guard<std::recursive_mutex> _lock;
 
-
+std::thread	thr_recv;
 SOCKET s;
 CLIENTS cs;
 std::recursive_mutex mt;
 
+std::atomic<uint64_t> ccid;
 std::atomic_bool run = false;
 void thread_send();
 void thread_recv();
 bool CreateSocket(u_short port);
+uint64_t createid() {
+	return ccid++;
+}
 
 
 int main()
 {
 	printf("Server prepare to Start...\r\n");
+	ccid = 0;
 	CreateSocket(3366);
 	while (true) {
 		getchar();
@@ -73,7 +81,7 @@ bool CreateSocket(u_short port) {
 			int nResult = bind(s, (sockaddr*)&local, sizeof(sockaddr));
 			DWORD err = GetLastError();
 			if (nResult != SOCKET_ERROR) {
-				std::thread a(thread_recv);
+				thr_recv = std::thread(thread_recv);
 				std::thread(thread_send);
 				printf("Server Start Successed on port %d\r\n",port);
 				ret = true;
@@ -104,7 +112,6 @@ void thread_recv() {
 	run = true;
 	uint32_t ip = 0;
 	uint32_t port = 0;
-	uint64_t id = 0;
 	int32_t len = 1024 * 8;
 	int32_t recvd = 0;
 	sockaddr_in peer;
@@ -117,41 +124,31 @@ void thread_recv() {
 		if (recvd == -1) {
 			continue;
 		}
-		ip = peer.sin_addr.S_un.S_addr;
-		port = peer.sin_port;
-		makekey(ip, port, id);
-		_lock l(mt);
-		iter = cs.find(id);
-		client0 = nullptr;
-		if (iter == cs.end()) {
-			client0 = new client();
-			cs[id] = client0;
+		cmdbase* pcmd = (cmdbase*)pbuf;
+		switch (pcmd->cmd) {
+		case init: {
+			uint64_t id = createid();
+			_lock l(mt);
 			iter = cs.find(id);
-		}
-		else {
-			client0 = iter->second;
-		}
-
-		if (client0 != nullptr) {
-			client0->mi.insert(client0->mi.end(), pbuf, pbuf + recvd);
-		}
-
-
-		/*
-		h* ph = (h*)(pbuf + recvd - 1);
-		if (ph->t = 1) {
-			std::lock_guard<std::recursive_mutex> guard1(CUdp::me()->mut);
-			peerlist::iterator iter = this->peer.find(peer);
-			if (iter != this->peer.end()) {
-				client* r = this->peer.find(peer)->second;
-				r->ack(ph);
+			client0 = nullptr;
+			if (iter == cs.end()) {
+				client0 = new client();
+				client0->id = id;
+				cs[id] = client0;
+				iter = cs.find(id);
 			}
+			else {
+				// 不太可能到这里，id占用1轮。
+				client0 = iter->second;
+			}
+			break;
 		}
-		else {
-			client* r = new client(peer);
-			r->notify_recv(pbuf, recvd - 1);
-			this->peer[peer] = r;
+		case quit: {
+			break;
 		}
-		*/
+
+		default:
+			break;
+		}
 	}
 }
