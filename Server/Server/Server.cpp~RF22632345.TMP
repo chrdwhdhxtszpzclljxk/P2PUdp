@@ -15,7 +15,6 @@
 #include <atomic>
 #include "client.h"
 #include <cmddef.h>
-#include <otprint.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
